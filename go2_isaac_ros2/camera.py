@@ -10,9 +10,8 @@ FRONT_CAMERA_FRAME_ID = "front_cam_optical"
 FRONT_CAMERA_RGB_TOPIC = "front_cam/rgb"
 FRONT_CAMERA_INFO_TOPIC = "front_cam/camera_info"
 FRONT_CAMERA_POS = (0.32487, -0.00095, 0.05362)
-# CameraCfg offsets in Isaac Lab are authored in ROS convention; this is the equivalent
-# quaternion in OpenGL/USD camera convention used by UsdGeom.Camera prims.
-FRONT_CAMERA_QUAT_WXYZ = (0.5, 0.5, -0.5, -0.5)
+# Front camera mount orientation tuned for Go2 base frame in standalone USD camera setup.
+FRONT_CAMERA_QUAT_WXYZ = (0.5, -0.5, 0.5, -0.5)
 FRONT_CAMERA_CLIP_RANGE = (0.1, 1.0e5)
 
 
