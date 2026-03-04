@@ -9,9 +9,9 @@ FRONT_CAMERA_PATH = f"{FRONT_CAMERA_PARENT}/{FRONT_CAMERA_NAME}"
 FRONT_CAMERA_FRAME_ID = "front_cam_optical"
 FRONT_CAMERA_RGB_TOPIC = "front_cam/rgb"
 FRONT_CAMERA_INFO_TOPIC = "front_cam/camera_info"
-FRONT_CAMERA_POS = (-0.32487, -0.00095, 0.05362)
-# For the Go2 base frame used here, the front direction is along -X.
-FRONT_CAMERA_QUAT_WXYZ = (0.5, -0.5, 0.5, -0.5)
+FRONT_CAMERA_POS = (0.32487, -0.00095, 0.05362)
+# Equivalent OpenGL/USD camera orientation for ROS offset rot=(0.5, -0.5, 0.5, -0.5).
+FRONT_CAMERA_QUAT_WXYZ = (0.5, 0.5, -0.5, -0.5)
 FRONT_CAMERA_CLIP_RANGE = (0.1, 1.0e5)
 
 
