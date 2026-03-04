@@ -20,7 +20,7 @@ TODO:
 | ❌ | Joint torque control   |
 | ✅ | Joint state and IMU      |
 | ✅ | Head LiDAR  |
-| ⬜ | Front camera      |
+| ✅ | Front camera      |
 | ⬜ | Terrain selection |
 
 ## Installation
@@ -75,7 +75,20 @@ ros2 launch go2_isaac_ros2 launch_sim.py
 
 Controlling the robot within Isaac Sim is the same as with hardware. To control the robot, publish `unitree_go.msg.LowCmd` messages to the `/lowcmd` topic.
 
-Similarly, to receive observations from the robot, subscribe to the `/lowstate` and `/utlidar/cloud` topics.
+Similarly, to receive observations from the robot, subscribe to the `/lowstate`, `/utlidar/cloud`, `/front_cam/rgb`, and `/front_cam/camera_info` topics.
+
+To verify camera publishing:
+
+```bash
+ros2 topic list | rg front_cam
+ros2 topic echo /front_cam/camera_info --once
+```
+
+To visualize the RGB stream:
+
+```bash
+ros2 run rqt_image_view rqt_image_view /front_cam/rgb
+```
 
 Note: `/clock` is also published by this package to allow for time synchronization with the simulator. To synchronize ROS2 with the simulator, be sure to set the `use_sim_time: true` parameter when launching all nodes.
 
