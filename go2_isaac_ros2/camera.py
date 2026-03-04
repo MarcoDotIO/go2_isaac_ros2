@@ -7,8 +7,8 @@ FRONT_CAMERA_PARENT = "/World/envs/env_0/Robot/base"
 FRONT_CAMERA_NAME = "front_cam"
 FRONT_CAMERA_PATH = f"{FRONT_CAMERA_PARENT}/{FRONT_CAMERA_NAME}"
 FRONT_CAMERA_FRAME_ID = "front_cam"
-FRONT_CAMERA_RGB_TOPIC = "/front_cam/rgb"
-FRONT_CAMERA_INFO_TOPIC = "/front_cam/camera_info"
+FRONT_CAMERA_RGB_TOPIC = "front_cam/rgb"
+FRONT_CAMERA_INFO_TOPIC = "front_cam/camera_info"
 FRONT_CAMERA_POS = (0.32487, -0.00095, 0.05362)
 FRONT_CAMERA_QUAT_WXYZ = (0.5, -0.5, 0.5, -0.5)
 FRONT_CAMERA_CLIP_RANGE = (0.1, 1.0e5)
@@ -47,9 +47,10 @@ def create_front_cam_omnigraph():
         {
             keys.CREATE_NODES: [
                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                ("CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
-                ("RgbHelper", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                ("CameraInfoHelper", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+                ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                ("CreateRenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
+                ("RgbHelper", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                ("CameraInfoHelper", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
             ],
             keys.SET_VALUES: [
                 ("CreateRenderProduct.inputs:cameraPrim", FRONT_CAMERA_PATH),
@@ -63,6 +64,8 @@ def create_front_cam_omnigraph():
             ],
             keys.CONNECT: [
                 ("OnPlaybackTick.outputs:tick", "CreateRenderProduct.inputs:execIn"),
+                ("Context.outputs:context", "RgbHelper.inputs:context"),
+                ("Context.outputs:context", "CameraInfoHelper.inputs:context"),
                 ("CreateRenderProduct.outputs:execOut", "RgbHelper.inputs:execIn"),
                 (
                     "CreateRenderProduct.outputs:renderProductPath",
