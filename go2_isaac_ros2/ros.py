@@ -21,9 +21,10 @@ WORLD_FRAME_ID = "world"
 BASE_FRAME_ID = "base"
 HEAD_LIDAR_FRAME_ID = "utlidar_lidar"
 FRONT_CAMERA_FRAME_ID = "front_cam"
+FRONT_CAMERA_OPTICAL_FRAME_ID = "front_cam_optical"
 HEAD_LIDAR_POS = (0.0, 0.0, 0.06)
 FRONT_CAMERA_POS = (0.32487, -0.00095, 0.05362)
-FRONT_CAMERA_QUAT_WXYZ = (0.5, -0.5, 0.5, -0.5)
+FRONT_CAMERA_OPTICAL_QUAT_WXYZ = (0.5, -0.5, 0.5, -0.5)
 
 
 class Go2SubNode(Node):
@@ -182,12 +183,20 @@ class Go2PubNode(Node):
         front_cam_tf.transform.translation.x = FRONT_CAMERA_POS[0]
         front_cam_tf.transform.translation.y = FRONT_CAMERA_POS[1]
         front_cam_tf.transform.translation.z = FRONT_CAMERA_POS[2]
-        front_cam_tf.transform.rotation.x = FRONT_CAMERA_QUAT_WXYZ[1]
-        front_cam_tf.transform.rotation.y = FRONT_CAMERA_QUAT_WXYZ[2]
-        front_cam_tf.transform.rotation.z = FRONT_CAMERA_QUAT_WXYZ[3]
-        front_cam_tf.transform.rotation.w = FRONT_CAMERA_QUAT_WXYZ[0]
+        front_cam_tf.transform.rotation.w = 1.0
 
-        self.tf_static_broadcaster.sendTransform([lidar_tf, front_cam_tf])
+        front_cam_optical_tf = TransformStamped()
+        front_cam_optical_tf.header.stamp = stamp
+        front_cam_optical_tf.header.frame_id = FRONT_CAMERA_FRAME_ID
+        front_cam_optical_tf.child_frame_id = FRONT_CAMERA_OPTICAL_FRAME_ID
+        front_cam_optical_tf.transform.rotation.x = FRONT_CAMERA_OPTICAL_QUAT_WXYZ[1]
+        front_cam_optical_tf.transform.rotation.y = FRONT_CAMERA_OPTICAL_QUAT_WXYZ[2]
+        front_cam_optical_tf.transform.rotation.z = FRONT_CAMERA_OPTICAL_QUAT_WXYZ[3]
+        front_cam_optical_tf.transform.rotation.w = FRONT_CAMERA_OPTICAL_QUAT_WXYZ[0]
+
+        self.tf_static_broadcaster.sendTransform(
+            [lidar_tf, front_cam_tf, front_cam_optical_tf]
+        )
 
     def _pub_tf(self, obs: dict):
         if self.clock_msg is None:

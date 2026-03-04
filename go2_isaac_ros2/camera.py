@@ -6,7 +6,7 @@ from pxr import Gf, UsdGeom
 FRONT_CAMERA_PARENT = "/World/envs/env_0/Robot/base"
 FRONT_CAMERA_NAME = "front_cam"
 FRONT_CAMERA_PATH = f"{FRONT_CAMERA_PARENT}/{FRONT_CAMERA_NAME}"
-FRONT_CAMERA_FRAME_ID = "front_cam"
+FRONT_CAMERA_FRAME_ID = "front_cam_optical"
 FRONT_CAMERA_RGB_TOPIC = "front_cam/rgb"
 FRONT_CAMERA_INFO_TOPIC = "front_cam/camera_info"
 FRONT_CAMERA_POS = (0.32487, -0.00095, 0.05362)
