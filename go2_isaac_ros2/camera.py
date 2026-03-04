@@ -38,19 +38,18 @@ def add_front_camera():
 def create_front_cam_omnigraph():
     keys = og.Controller.Keys
     graph_path = "/ROS_front_cam"
-    og.Controller.edit(
+    (graph, _, _, _) = og.Controller.edit(
         {
             "graph_path": graph_path,
-            "evaluator_name": "execution",
-            "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
+            "evaluator_name": "push",
+            "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
         },
         {
             keys.CREATE_NODES: [
-                ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                ("Context", "isaacsim.ros2.bridge.ROS2Context"),
+                ("OnTick", "omni.graph.action.OnTick"),
                 ("CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
                 ("RgbHelper", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                ("CameraInfoHelper", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+                ("CameraInfoHelper", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
             ],
             keys.SET_VALUES: [
                 ("CreateRenderProduct.inputs:cameraPrim", FRONT_CAMERA_PATH),
@@ -58,22 +57,16 @@ def create_front_cam_omnigraph():
                 ("RgbHelper.inputs:type", "rgb"),
                 ("RgbHelper.inputs:topicName", FRONT_CAMERA_RGB_TOPIC),
                 ("RgbHelper.inputs:frameId", FRONT_CAMERA_FRAME_ID),
-                ("CameraInfoHelper.inputs:type", "camera_info"),
                 ("CameraInfoHelper.inputs:topicName", FRONT_CAMERA_INFO_TOPIC),
                 ("CameraInfoHelper.inputs:frameId", FRONT_CAMERA_FRAME_ID),
             ],
             keys.CONNECT: [
-                ("OnPlaybackTick.outputs:tick", "CreateRenderProduct.inputs:execIn"),
-                ("Context.outputs:context", "RgbHelper.inputs:context"),
-                ("Context.outputs:context", "CameraInfoHelper.inputs:context"),
+                ("OnTick.outputs:tick", "CreateRenderProduct.inputs:execIn"),
                 ("CreateRenderProduct.outputs:execOut", "RgbHelper.inputs:execIn"),
+                ("CreateRenderProduct.outputs:execOut", "CameraInfoHelper.inputs:execIn"),
                 (
                     "CreateRenderProduct.outputs:renderProductPath",
                     "RgbHelper.inputs:renderProductPath",
-                ),
-                (
-                    "CreateRenderProduct.outputs:execOut",
-                    "CameraInfoHelper.inputs:execIn",
                 ),
                 (
                     "CreateRenderProduct.outputs:renderProductPath",
@@ -82,3 +75,4 @@ def create_front_cam_omnigraph():
             ],
         },
     )
+    og.Controller.evaluate_sync(graph)
