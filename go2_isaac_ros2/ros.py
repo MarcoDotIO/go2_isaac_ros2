@@ -8,7 +8,8 @@ from unitree_go.msg import LowCmd, LowState
 from std_msgs.msg import Header
 from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs_py import point_cloud2
-from geometry_msgs.msg import Twist, PoseStamped, TwistStamped
+from geometry_msgs.msg import Twist, PoseStamped, TwistStamped, TransformStamped
+from tf2_ros import TransformBroadcaster, StaticTransformBroadcaster
 from go2_isaac_ros2.env import IsaacSimGo2EnvWrapper
 from go2_isaac_ros2.lidar import get_head_lidar_pointcloud
 
@@ -16,6 +17,13 @@ from go2_isaac_ros2.lidar import get_head_lidar_pointcloud
 GROUND_TRUTH_TWIST_TOPIC = "/ground_truth/twist"
 GROUND_TRUTH_WORLD_POSE_TOPIC = "/vrpn_mocap/go2/pose"
 GROUND_TRUTH_WORLD_TWIST_TOPIC = "/vrpn_mocap/go2/twist"
+WORLD_FRAME_ID = "world"
+BASE_FRAME_ID = "base"
+HEAD_LIDAR_FRAME_ID = "utlidar_lidar"
+FRONT_CAMERA_FRAME_ID = "front_cam"
+HEAD_LIDAR_POS = (0.0, 0.0, 0.06)
+FRONT_CAMERA_POS = (0.32487, -0.00095, 0.05362)
+FRONT_CAMERA_QUAT_WXYZ = (0.5, -0.5, 0.5, -0.5)
 
 
 class Go2SubNode(Node):
@@ -59,9 +67,13 @@ class Go2PubNode(Node):
             TwistStamped, GROUND_TRUTH_WORLD_TWIST_TOPIC, 10
         )
         self.clock_msg = None
+        self.tf_broadcaster = TransformBroadcaster(self)
+        self.tf_static_broadcaster = StaticTransformBroadcaster(self)
+        self._pub_static_tf()
 
     def publish(self, obs: dict, sim_time_sec: float):
         self._pub_clock(sim_time_sec)
+        self._pub_tf(obs)
         self._pub_low_state(obs)
         self._pub_head_lidar()
         self._pub_ground_truth(obs)
@@ -98,7 +110,7 @@ class Go2PubNode(Node):
         pcl = get_head_lidar_pointcloud().tolist()
 
         header = Header()
-        header.frame_id = "utlidar_lidar"
+        header.frame_id = HEAD_LIDAR_FRAME_ID
         header.stamp.sec = self.clock_msg.clock.sec
         header.stamp.nanosec = self.clock_msg.clock.nanosec
 
@@ -127,7 +139,7 @@ class Go2PubNode(Node):
         self.ground_truth_twist_pub.publish(twist)
 
         pose_w = PoseStamped()
-        pose_w.header.frame_id = "world"
+        pose_w.header.frame_id = WORLD_FRAME_ID
         pose_w.header.stamp.sec = self.clock_msg.clock.sec
         pose_w.header.stamp.nanosec = self.clock_msg.clock.nanosec
         pose_w.pose.position.x = obs["obs"]["world_pos"][0, 0].item()
@@ -140,7 +152,7 @@ class Go2PubNode(Node):
         self.ground_truth_world_pose_pub.publish(pose_w)
 
         twist_w = TwistStamped()
-        twist_w.header.frame_id = "world"
+        twist_w.header.frame_id = WORLD_FRAME_ID
         twist_w.header.stamp.sec = self.clock_msg.clock.sec
         twist_w.header.stamp.nanosec = self.clock_msg.clock.nanosec
         twist_w.twist.linear.x = obs["obs"]["world_lin_vel"][0, 0].item()
@@ -150,6 +162,50 @@ class Go2PubNode(Node):
         twist_w.twist.angular.y = obs["obs"]["world_ang_vel"][0, 1].item()
         twist_w.twist.angular.z = obs["obs"]["world_ang_vel"][0, 2].item()
         self.ground_truth_world_twist_pub.publish(twist_w)
+
+    def _pub_static_tf(self):
+        stamp = self.get_clock().now().to_msg()
+
+        lidar_tf = TransformStamped()
+        lidar_tf.header.stamp = stamp
+        lidar_tf.header.frame_id = BASE_FRAME_ID
+        lidar_tf.child_frame_id = HEAD_LIDAR_FRAME_ID
+        lidar_tf.transform.translation.x = HEAD_LIDAR_POS[0]
+        lidar_tf.transform.translation.y = HEAD_LIDAR_POS[1]
+        lidar_tf.transform.translation.z = HEAD_LIDAR_POS[2]
+        lidar_tf.transform.rotation.w = 1.0
+
+        front_cam_tf = TransformStamped()
+        front_cam_tf.header.stamp = stamp
+        front_cam_tf.header.frame_id = BASE_FRAME_ID
+        front_cam_tf.child_frame_id = FRONT_CAMERA_FRAME_ID
+        front_cam_tf.transform.translation.x = FRONT_CAMERA_POS[0]
+        front_cam_tf.transform.translation.y = FRONT_CAMERA_POS[1]
+        front_cam_tf.transform.translation.z = FRONT_CAMERA_POS[2]
+        front_cam_tf.transform.rotation.x = FRONT_CAMERA_QUAT_WXYZ[1]
+        front_cam_tf.transform.rotation.y = FRONT_CAMERA_QUAT_WXYZ[2]
+        front_cam_tf.transform.rotation.z = FRONT_CAMERA_QUAT_WXYZ[3]
+        front_cam_tf.transform.rotation.w = FRONT_CAMERA_QUAT_WXYZ[0]
+
+        self.tf_static_broadcaster.sendTransform([lidar_tf, front_cam_tf])
+
+    def _pub_tf(self, obs: dict):
+        if self.clock_msg is None:
+            return
+
+        base_tf = TransformStamped()
+        base_tf.header.stamp.sec = self.clock_msg.clock.sec
+        base_tf.header.stamp.nanosec = self.clock_msg.clock.nanosec
+        base_tf.header.frame_id = WORLD_FRAME_ID
+        base_tf.child_frame_id = BASE_FRAME_ID
+        base_tf.transform.translation.x = obs["obs"]["world_pos"][0, 0].item()
+        base_tf.transform.translation.y = obs["obs"]["world_pos"][0, 1].item()
+        base_tf.transform.translation.z = obs["obs"]["world_pos"][0, 2].item()
+        base_tf.transform.rotation.x = obs["obs"]["world_quat"][0, 1].item()
+        base_tf.transform.rotation.y = obs["obs"]["world_quat"][0, 2].item()
+        base_tf.transform.rotation.z = obs["obs"]["world_quat"][0, 3].item()
+        base_tf.transform.rotation.w = obs["obs"]["world_quat"][0, 0].item()
+        self.tf_broadcaster.sendTransform(base_tf)
 
     def _clock_to_sec(self, clock_msg: Clock) -> float:
         return clock_msg.clock.sec + clock_msg.clock.nanosec / 1e9
