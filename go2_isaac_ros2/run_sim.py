@@ -2,7 +2,7 @@
 print("Starting Isaac Sim")
 from isaaclab.app import AppLauncher
 
-app_launcher = AppLauncher()
+app_launcher = AppLauncher({"enable_cameras": True})
 simulation_app = app_launcher.app
 
 import omni
