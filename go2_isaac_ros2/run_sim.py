@@ -9,6 +9,7 @@ import omni
 from go2_isaac_ros2.env import UnitreeGo2CustomEnvCfg, IsaacSimGo2EnvWrapper
 from isaaclab.envs import ManagerBasedEnv
 from go2_isaac_ros2.lidar import add_head_lidar
+from go2_isaac_ros2.camera import add_front_camera, create_front_cam_omnigraph
 import rclpy
 from go2_isaac_ros2.ros import Go2PubNode, Go2SubNode
 import time
@@ -24,6 +25,8 @@ def run_sim():
     env = ManagerBasedEnv(env_cfg)
     env = IsaacSimGo2EnvWrapper(env)
     add_head_lidar()
+    add_front_camera()
+    create_front_cam_omnigraph()
 
     # reset environment
     obs, _ = env.reset()
