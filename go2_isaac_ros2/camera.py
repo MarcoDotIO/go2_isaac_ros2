@@ -47,10 +47,10 @@ def create_front_cam_omnigraph():
         {
             keys.CREATE_NODES: [
                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
-                ("CreateRenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
-                ("RgbHelper", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
-                ("CameraInfoHelper", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                ("Context", "isaacsim.ros2.bridge.ROS2Context"),
+                ("CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                ("RgbHelper", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+                ("CameraInfoHelper", "isaacsim.ros2.bridge.ROS2CameraHelper"),
             ],
             keys.SET_VALUES: [
                 ("CreateRenderProduct.inputs:cameraPrim", FRONT_CAMERA_PATH),
